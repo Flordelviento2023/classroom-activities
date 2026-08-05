@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>What is Work the Net?</title>
+<style>
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 20px;
+    background: #faf8f5;
+    color: #2b2b2b;
+    max-width: 950px;
+    margin: 0 auto;
+    padding: 30px 20px 80px;
+    line-height: 1.6;
+  }
+  .header-bar {
+    background: linear-gradient(90deg, #6b1030, #a51c30);
+    color: #fff;
+    padding: 18px 24px;
+    border-radius: 10px 10px 0 0;
+    font-size: 30px;
+    font-weight: bold;
+  }
+  .header-bar .accent { color: #f6c6d0; }
+  .hint {
+    font-size: 15px;
+    font-style: italic;
+    color: #888;
+    text-align: center;
+    margin: 14px 0 26px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+  }
+  .article h2 {
+    color: #a51c30;
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  .article p {
+    margin-top: 4px;
+  }
+  .profile-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 18px 20px;
+    font-size: 16px;
+    height: fit-content;
+  }
+  .profile-card .name {
+    font-weight: bold;
+    font-size: 19px;
+    color: #2b2b2b;
+  }
+  .profile-card .location {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+  .profile-card .tag {
+    display: inline-block;
+    background: #a51c30;
+    color: #fff;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 4px 0 2px;
+  }
+  .profile-card .role {
+    font-size: 15px;
+    color: #444;
+    margin-bottom: 10px;
+  }
+  .profile-card h3 {
+    color: #a51c30;
+    font-size: 15px;
+    margin: 16px 0 4px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 3px;
+  }
+  .profile-card ul {
+    margin: 4px 0;
+    padding-left: 18px;
+    font-size: 14px;
+  }
+
+  /* clickable words */
+  .word {
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.15s;
+  }
+  .word:hover {
+    background: #fbe4e8;
+  }
+
+  /* popup */
+  #popup {
+    position: absolute;
+    display: none;
+    background: #fff;
+    border: 2px solid #a51c30;
+    border-radius: 10px;
+    padding: 14px 18px;
+    max-width: 320px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    font-size: 16px;
+    z-index: 999;
+  }
+  #popup .pop-word {
+    font-weight: bold;
+    color: #a51c30;
+    font-size: 19px;
+  }
+  #popup .pop-phonetic {
+    color: #666;
+    font-size: 15px;
+    margin-left: 6px;
+  }
+  #popup .pop-pos {
+    display: inline-block;
+    font-style: italic;
+    color: #888;
+    font-size: 13px;
+    margin: 4px 0;
+  }
+  #popup .pop-def {
+    font-size: 15px;
+    margin-top: 4px;
+  }
+  #popup .pop-controls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  #popup button.play-btn {
+    background: #a51c30;
+    color: #fff;
+    border: none;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: Georgia, serif;
+  }
+  #popup button.play-btn:hover {
+    background: #841626;
+  }
+  #popup button.close-btn {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  #popup .pop-note {
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+  }
+  #overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 998;
+  }
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header-bar">What is <span class="accent">Work the Net</span>?</div>
+<div class="hint">Tap any word in the text to see its English definition and hear the pronunciation.</div>
+
+<div class="layout">
+  <div class="article" id="articleContent">
+    <p>Work the Net is a popular online networking tool that connects business professionals all over the world. Founded in 2004, Work the Net has become an essential resource for anyone looking for their dream job.</p>
+
+    <h2>Connections</h2>
+    <p>The business world is all about connections and, thanks to an ever-growing database of high-profile companies and recruiters, Work the Net can help you make the first contact with your ideal employer. Work the Net also collaborates with other social media platforms, allowing you to maximize your job-seeking potential.</p>
+
+    <h2>Moving forward</h2>
+    <p>Work the Net understands the ever-changing nature of the business world, and the importance of developing links with key contacts as your career progresses. It's time to be proactive and take control of your career, but you don't have to do it alone. Let Work the Net be your guide!</p>
+  </div>
+
+  <div class="profile-card" id="profileContent">
+    <div class="name">Jean-Christophe Marchal</div>
+    <div class="location">Paris, France</div>
+    <div class="tag">MARKETING AND ADVERTISING</div>
+    <div class="role">Commercial Director, PTTT Services</div>
+
+    <h3>Overview</h3>
+    <p>Commercial Director responsible for promoting and pitching new on-line products and services for major public companies in the Paris area.</p>
+
+    <h3>Work history</h3>
+    <ul>
+      <li>Marketing Director at Thomson Europe</li>
+      <li>Export Area Manager at Thomson France</li>
+      <li>Business Manager at Elefaucet Group</li>
+    </ul>
+
+    <h3>Languages</h3>
+    <ul>
+      <li>French (native proficiency)</li>
+      <li>Italian (native proficiency)</li>
+      <li>English (professional proficiency)</li>
+    </ul>
+  </div>
+</div>
+
+<div id="overlay"></div>
+<div id="popup">
+  <button class="close-btn" id="closeBtn" style="float:right;">&times;</button>
+  <div id="popupBody"></div>
+</div>
+
+<script>
+  // ---- Offline dictionary: works with no internet connection ----
+  const DICTIONARY = {
+    "popular":        { phonetic: "/ˈpɒp.jə.lər/", pos: "adjective", def: "liked or used by a lot of people." },
+    "online":         { phonetic: "/ˈɒn.laɪn/", pos: "adjective/adverb", def: "connected to or available through the Internet." },
+    "networking":     { phonetic: "/ˈnet.wɜː.kɪŋ/", pos: "noun", def: "meeting people and making contacts that could be useful for your job or business." },
+    "tool":           { phonetic: "/tuːl/", pos: "noun", def: "a thing that helps you do a job or task." },
+    "connects":       { phonetic: "/kəˈnekts/", pos: "verb", def: "joins or links two or more things or people together." },
+    "connections":    { phonetic: "/kəˈnek.ʃənz/", pos: "noun", def: "people you know who may be useful to you, especially in business." },
+    "business":       { phonetic: "/ˈbɪz.nɪs/", pos: "noun", def: "the activity of buying and selling goods or services." },
+    "professionals":  { phonetic: "/prəˈfeʃ.ən.əlz/", pos: "noun", def: "people who work in a particular job that needs special training." },
+    "founded":        { phonetic: "/ˈfaʊn.dɪd/", pos: "verb", def: "started an organization or company." },
+    "essential":      { phonetic: "/ɪˈsen.ʃəl/", pos: "adjective", def: "completely necessary; very important." },
+    "resource":       { phonetic: "/rɪˈzɔːs/", pos: "noun", def: "something that can be used to help you achieve a goal." },
+    "looking":        { phonetic: "/ˈlʊk.ɪŋ/", pos: "verb", def: "searching for something." },
+    "dream":          { phonetic: "/driːm/", pos: "noun/adjective", def: "something you hope for or want very much (e.g. 'dream job' = the perfect job)." },
+    "job":            { phonetic: "/dʒɒb/", pos: "noun", def: "the work someone does regularly to earn money." },
+    "world":          { phonetic: "/wɜːld/", pos: "noun", def: "the earth and all the people, places and things on it." },
+    "database":       { phonetic: "/ˈdeɪ.tə.beɪs/", pos: "noun", def: "a large amount of organized information stored on a computer." },
+    "companies":      { phonetic: "/ˈkʌm.pə.niz/", pos: "noun", def: "businesses that sell goods or services." },
+    "recruiters":     { phonetic: "/rɪˈkruː.tərz/", pos: "noun", def: "people whose job is to find new employees for a company." },
+    "help":           { phonetic: "/help/", pos: "verb/noun", def: "to make something easier for someone; assistance." },
+    "contact":        { phonetic: "/ˈkɒn.tækt/", pos: "noun/verb", def: "communication with a person; or a person you know who can be useful." },
+    "contacts":       { phonetic: "/ˈkɒn.tækts/", pos: "noun", def: "people you know who can help you, especially in business." },
+    "ideal":          { phonetic: "/aɪˈdɪəl/", pos: "adjective", def: "perfect; exactly what you want or need." },
+    "employer":       { phonetic: "/ɪmˈplɔɪ.ər/", pos: "noun", def: "a person or company that pays people to work for them." },
+    "collaborates":   { phonetic: "/kəˈlæb.ə.reɪts/", pos: "verb", def: "works together with another person or organization." },
+    "platforms":      { phonetic: "/ˈplæt.fɔːmz/", pos: "noun", def: "computer systems or services that other programs or apps can use (e.g. a social media platform)." },
+    "allowing":       { phonetic: "/əˈlaʊ.ɪŋ/", pos: "verb", def: "letting someone do something; making it possible." },
+    "maximize":       { phonetic: "/ˈmæk.sɪ.maɪz/", pos: "verb", def: "to make something as large or effective as possible." },
+    "potential":      { phonetic: "/pəˈten.ʃəl/", pos: "noun/adjective", def: "the possibility of something developing or being successful in the future." },
+    "understands":    { phonetic: "/ˌʌn.dəˈstændz/", pos: "verb", def: "knows and comprehends how something works or what it means." },
+    "nature":         { phonetic: "/ˈneɪ.tʃər/", pos: "noun", def: "the basic character or quality of something." },
+    "importance":     { phonetic: "/ɪmˈpɔː.təns/", pos: "noun", def: "the quality of being important or significant." },
+    "developing":     { phonetic: "/dɪˈvel.ə.pɪŋ/", pos: "verb", def: "growing or making something grow, improve, or become more advanced." },
+    "links":          { phonetic: "/lɪŋks/", pos: "noun", def: "connections between people, things or ideas." },
+    "key":            { phonetic: "/kiː/", pos: "adjective/noun", def: "very important; essential." },
+    "career":         { phonetic: "/kəˈrɪər/", pos: "noun", def: "the series of jobs a person has during their working life." },
+    "progresses":     { phonetic: "/prəˈɡres.ɪz/", pos: "verb", def: "develops or improves gradually over time." },
+    "proactive":      { phonetic: "/ˌproʊˈæk.tɪv/", pos: "adjective", def: "taking action to make things happen, instead of just reacting to events." },
+    "control":        { phonetic: "/kənˈtroʊl/", pos: "noun/verb", def: "the power to direct or influence something." },
+    "alone":          { phonetic: "/əˈloʊn/", pos: "adverb/adjective", def: "without other people; by yourself." },
+    "guide":          { phonetic: "/ɡaɪd/", pos: "noun/verb", def: "a person or thing that helps you do something or find your way." },
+    "marketing":      { phonetic: "/ˈmɑː.kɪ.tɪŋ/", pos: "noun", def: "the activity of promoting and selling products or services." },
+    "advertising":    { phonetic: "/ˈæd.və.taɪ.zɪŋ/", pos: "noun", def: "telling people about a product or service, usually to persuade them to buy it." },
+    "commercial":     { phonetic: "/kəˈmɜː.ʃəl/", pos: "adjective", def: "related to buying and selling goods or services." },
+    "director":       { phonetic: "/daɪˈrek.tər/", pos: "noun", def: "a senior manager of a company or organization." },
+    "services":       { phonetic: "/ˈsɜː.vɪ.sɪz/", pos: "noun", def: "work done for others as an occupation or business, rather than a physical product." },
+    "overview":       { phonetic: "/ˈoʊ.vər.vjuː/", pos: "noun", def: "a general summary of something." },
+    "responsible":    { phonetic: "/rɪˈspɒn.sə.bəl/", pos: "adjective", def: "having a duty to deal with or take care of something." },
+    "promoting":      { phonetic: "/prəˈmoʊ.tɪŋ/", pos: "verb", def: "helping something to be sold, be more popular, or succeed." },
+    "pitching":       { phonetic: "/ˈpɪtʃ.ɪŋ/", pos: "verb", def: "presenting an idea or product to try to sell it or get support for it." },
+    "products":       { phonetic: "/ˈprɒd.ʌkts/", pos: "noun", def: "things that are made or grown to be sold." },
+    "major":          { phonetic: "/ˈmeɪ.dʒər/", pos: "adjective", def: "important or large; significant." },
+    "public":         { phonetic: "/ˈpʌb.lɪk/", pos: "adjective", def: "relating to or open to people in general." },
+    "area":           { phonetic: "/ˈeə.ri.ə/", pos: "noun", def: "a particular region, part, or field." },
+    "history":        { phonetic: "/ˈhɪs.tər.i/", pos: "noun", def: "the record of past events (here: 'work history' = a record of past jobs)." },
+    "export":         { phonetic: "/ˈek.spɔːt/", pos: "noun/verb", def: "goods sent to another country to be sold; or to sell goods to another country." },
+    "manager":        { phonetic: "/ˈmæn.ɪ.dʒər/", pos: "noun", def: "a person who is in charge of a business, department, or team." },
+    "languages":      { phonetic: "/ˈlæŋ.ɡwɪ.dʒɪz/", pos: "noun", def: "systems of communication used by particular countries or groups of people." },
+    "native":         { phonetic: "/ˈneɪ.tɪv/", pos: "adjective", def: "relating to the place a person was born, or the first language they learned." },
+    "proficiency":    { phonetic: "/prəˈfɪʃ.ən.si/", pos: "noun", def: "a good level of skill or knowledge in something, such as a language." },
+    "professional":   { phonetic: "/prəˈfeʃ.ən.əl/", pos: "adjective", def: "relating to a person's job, or to a high standard of skill." },
+    "high-profile":   { phonetic: "/ˌhaɪˈproʊ.faɪl/", pos: "adjective", def: "attracting a lot of public attention; well-known." },
+    "ever-growing":   { phonetic: "/ˌev.ərˈɡroʊ.ɪŋ/", pos: "adjective", def: "continuing to become bigger or larger all the time." },
+    "ever-changing":  { phonetic: "/ˌev.ərˈtʃeɪndʒ.ɪŋ/", pos: "adjective", def: "continuing to change all the time." },
+    "job-seeking":    { phonetic: "/ˈdʒɒb ˌsiː.kɪŋ/", pos: "adjective", def: "related to looking for a job." },
+    "on-line":        { phonetic: "/ˈɒn.laɪn/", pos: "adjective", def: "connected to or available through the Internet (same as 'online')." },
+    "work":           { phonetic: "/wɜːk/", pos: "noun/verb", def: "an activity you do, especially as your job; or to do that activity." },
+    "become":         { phonetic: "/bɪˈkʌm/", pos: "verb", def: "to start to be something; to change into something." },
+    "first":          { phonetic: "/fɜːst/", pos: "adjective/adverb", def: "coming before all others; happening before anything else." },
+    "make":           { phonetic: "/meɪk/", pos: "verb", def: "to create, produce, or cause something to happen (e.g. 'make contact')." },
+    "social":         { phonetic: "/ˈsoʊ.ʃəl/", pos: "adjective", def: "relating to activities in which people meet each other, or to society in general." },
+    "media":          { phonetic: "/ˈmiː.di.ə/", pos: "noun", def: "the main ways people communicate information, such as TV, newspapers, and the Internet." },
+    "moving":         { phonetic: "/ˈmuː.vɪŋ/", pos: "verb", def: "going from one place, position, or stage to another." },
+    "forward":        { phonetic: "/ˈfɔː.wərd/", pos: "adverb", def: "toward the front, or ahead in time (e.g. 'moving forward' = in the future)." },
+    "time":           { phonetic: "/taɪm/", pos: "noun", def: "the thing measured in minutes, hours, days, etc.; the right moment for something." },
+    "take":           { phonetic: "/teɪk/", pos: "verb", def: "to get hold of something; to gain or assume (e.g. 'take control')." },
+    "new":            { phonetic: "/njuː/", pos: "adjective", def: "not existing before; recently made, created, or introduced." },
+    "french":         { phonetic: "/frentʃ/", pos: "adjective/noun", def: "relating to France, or the language spoken there." },
+    "italian":        { phonetic: "/ɪˈtæl.jən/", pos: "adjective/noun", def: "relating to Italy, or the language spoken there." },
+    "english":        { phonetic: "/ˈɪŋ.ɡlɪʃ/", pos: "adjective/noun", def: "relating to England, or the language spoken there and in many other countries." }
+  };
+
+  function wrapWords(container) {
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null);
+    const textNodes = [];
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.nodeValue.trim().length > 0) textNodes.push(node);
+    }
+    textNodes.forEach(textNode => {
+      const frag = document.createDocumentFragment();
+      const parts = textNode.nodeValue.split(/(\b[a-zA-Z']+(?:-[a-zA-Z']+)*\b)/);
+      parts.forEach(part => {
+        if (/^[a-zA-Z']+(-[a-zA-Z']+)*$/.test(part)) {
+          const span = document.createElement('span');
+          span.className = 'word';
+          span.textContent = part;
+          span.dataset.word = part.replace(/'/g, '').toLowerCase();
+          frag.appendChild(span);
+        } else {
+          frag.appendChild(document.createTextNode(part));
+        }
+      });
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+  }
+
+  wrapWords(document.getElementById('articleContent'));
+  wrapWords(document.getElementById('profileContent'));
+
+  const popup = document.getElementById('popup');
+  const overlay = document.getElementById('overlay');
+  const popupBody = document.getElementById('popupBody');
+  const closeBtn = document.getElementById('closeBtn');
+
+  function closePopup() {
+    popup.style.display = 'none';
+    overlay.style.display = 'none';
+  }
+  closeBtn.addEventListener('click', closePopup);
+  overlay.addEventListener('click', closePopup);
+
+  function speakWord(word) {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(word);
+      utter.lang = 'en-US';
+      utter.rate = 0.85;
+      speechSynthesis.speak(utter);
+    }
+  }
+
+  function showDefinition(displayWord, lookupWord, x, y) {
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
+    popup.style.display = 'block';
+    overlay.style.display = 'block';
+
+    const entry = DICTIONARY[lookupWord];
+
+    if (entry) {
+      popupBody.innerHTML = `
+        <span class="pop-word">${displayWord}</span><span class="pop-phonetic">${entry.phonetic}</span>
+        <div class="pop-pos">${entry.pos}</div>
+        <div class="pop-def">${entry.def}</div>
+        <div class="pop-controls">
+          <button class="play-btn" id="playBtn">&#128266; Listen</button>
+        </div>
+      `;
+    } else {
+      popupBody.innerHTML = `
+        <span class="pop-word">${displayWord}</span>
+        <div class="pop-note">Tap Listen to hear how this word is pronounced.</div>
+        <div class="pop-controls">
+          <button class="play-btn" id="playBtn">&#128266; Listen</button>
+        </div>
+      `;
+    }
+
+    document.getElementById('playBtn').addEventListener('click', () => speakWord(displayWord));
+  }
+
+  document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('word')) {
+      const rect = e.target.getBoundingClientRect();
+      const x = rect.left + window.scrollX;
+      const y = rect.bottom + window.scrollY + 6;
+      showDefinition(e.target.textContent, e.target.dataset.word, x, y);
+    }
+  });
+</script>
+
+</body>
+</html>
