@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Answer the Questions - True for You</title>
+<style>
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 20px;
+    background: #faf8f5;
+    color: #2b2b2b;
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+  }
+  h1 {
+    color: #a51c30;
+    font-size: 25px;
+    border-bottom: 3px solid #a51c30;
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+  }
+  .instructions {
+    font-size: 17px;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  .question-card {
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  .q-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .q-num {
+    font-weight: bold;
+    color: #a51c30;
+    font-size: 20px;
+    min-width: 22px;
+  }
+  .q-audio-controls {
+    display: flex;
+    gap: 8px;
+  }
+  .q-audio-controls button {
+    font-family: Georgia, serif;
+    font-size: 14px;
+    background: #a51c30;
+    color: #fff;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .q-audio-controls button.secondary {
+    background: #fff;
+    color: #a51c30;
+    border: 1.5px solid #a51c30;
+  }
+  .q-text {
+    font-size: 19px;
+    color: #333;
+    margin-bottom: 12px;
+    visibility: hidden;
+    min-height: 26px;
+  }
+  .q-text.visible { visibility: visible; }
+  .answer-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  input[type="text"] {
+    flex: 1;
+    min-width: 250px;
+    font-family: Georgia, serif;
+    font-size: 17px;
+    padding: 8px 12px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+  }
+  input[type="text"]:focus {
+    border-color: #a51c30;
+    outline: none;
+  }
+  input.grammar-ok { border-color: #2e7d32; background: #e8f5e9; }
+  input.grammar-issue { border-color: #e08a1c; background: #fff6e8; }
+  .check-btn {
+    font-family: Georgia, serif;
+    font-size: 15px;
+    background: #2b2b2b;
+    color: #fff;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .check-btn:hover { background: #444; }
+  .mic-btn {
+    font-size: 18px;
+    background: #a51c30;
+    color: #fff;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .mic-btn.listening {
+    background: #c62828;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(198,40,40,0.5); }
+    70% { box-shadow: 0 0 0 12px rgba(198,40,40,0); }
+    100% { box-shadow: 0 0 0 0 rgba(198,40,40,0); }
+  }
+  .mic-status {
+    font-size: 13px;
+    color: #999;
+    font-style: italic;
+    min-height: 18px;
+    margin-top: 4px;
+  }
+  .feedback {
+    font-size: 15px;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+  .feedback.ok { color: #2e7d32; }
+  .feedback ul {
+    margin: 4px 0 0 18px;
+    color: #b5590d;
+  }
+  .example {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
+    margin-top: 4px;
+  }
+  .note {
+    background: #fdf3f0;
+    border-left: 4px solid #a51c30;
+    padding: 12px 16px;
+    font-size: 15px;
+    color: #555;
+    margin-bottom: 25px;
+    border-radius: 0 6px 6px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>Answer the questions so they're true for you</h1>
+<div class="instructions">Write statements. Use <em>It's</em> and <em>It's not</em> to give more information.</div>
+<div class="note">📌 This checker looks at your <strong>grammar and sentence structure</strong> — not whether the answer is factually true. Only you know that! ✅ means your structure is correct; if something's missing, you'll get a tip.</div>
+
+<div id="questionsContainer"></div>
+
+<script>
+  var QUESTIONS = [
+    { num: 1, text: "Is your home an apartment?", subjectWords: ["home"], example: "My home isn't an apartment. It's a house." },
+    { num: 2, text: "Is your bedroom cool?", subjectWords: ["bedroom"], example: "My bedroom is cool. It's really nice." },
+    { num: 3, text: "Is your kitchen big?", subjectWords: ["kitchen"], example: "My kitchen isn't big. It's small." },
+    { num: 4, text: "Is your parents' house old?", subjectWords: ["house", "parents"], example: "My parents' house is old. It's not new." },
+    { num: 5, text: "Is your friend's TV new?", subjectWords: ["tv", "television"], example: "My friend's TV is new. It's not old." },
+    { num: 6, text: "Is your refrigerator tall?", subjectWords: ["refrigerator", "fridge"], example: "My refrigerator isn't tall. It's short." }
+  ];
+
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      var utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 0.9;
+      speechSynthesis.speak(utter);
+    }
+  }
+
+  function checkStructure(answer, subjectWords) {
+    var issues = [];
+    var lower = answer.toLowerCase().trim();
+    if (lower === '') return { ok: false, issues: ['Write an answer first!'] };
+
+    var clauses = lower.split(/[.!,]|\band\b|\bbut\b/).map(function (s) { return s.trim(); }).filter(Boolean);
+
+    if (clauses.length === 0) {
+      issues.push("Try writing two parts: one answering Yes/No, and a second one with \"It's\" or \"It's not\".");
+      return { ok: false, issues: issues };
+    }
+
+    var clause1 = clauses[0];
+    var hasAux = /\b(is|isn't|is not|'s)\b/.test(clause1);
+    if (!hasAux) {
+      issues.push("Your first sentence should use \"is\" or \"isn't\" (e.g. \"My home isn't...\").");
+    }
+
+    var hasItClause = clauses.slice(1).some(function (c) { return /^it('s| is| isn't| is not)\b/.test(c); });
+    if (!hasItClause) {
+      issues.push("Include a part with \"It's\" or \"It's not\" to give more information (you can join it with \"and\"/\"but\", a comma, or a new sentence).");
+    }
+
+    return { ok: issues.length === 0, issues: issues };
+  }
+
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var container = document.getElementById('questionsContainer');
+
+  QUESTIONS.forEach(function (q, i) {
+    var card = document.createElement('div');
+    card.className = 'question-card';
+    card.innerHTML =
+      '<div class="q-top">' +
+        '<span class="q-num">' + q.num + '</span>' +
+        '<div class="q-audio-controls">' +
+          '<button class="playBtn">&#128264; Listen</button>' +
+          '<button class="secondary revealBtn">&#128065; Show / Hide</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="q-text">' + q.text + '</div>' +
+      '<div class="answer-row">' +
+        '<input type="text" placeholder="Write your answer here, or use the microphone...">' +
+        '<button class="mic-btn">&#127908;</button>' +
+        '<button class="check-btn">Check grammar</button>' +
+      '</div>' +
+      '<div class="mic-status"></div>' +
+      '<div class="feedback"></div>' +
+      '<div class="example" style="display:none;">Example structure: <em>' + q.example + '</em></div>';
+
+    var qText = card.querySelector('.q-text');
+    var playBtn = card.querySelector('.playBtn');
+    var revealBtn = card.querySelector('.revealBtn');
+    var input = card.querySelector('input[type="text"]');
+    var micBtn = card.querySelector('.mic-btn');
+    var micStatus = card.querySelector('.mic-status');
+    var checkBtn = card.querySelector('.check-btn');
+    var feedback = card.querySelector('.feedback');
+    var exampleEl = card.querySelector('.example');
+
+    playBtn.addEventListener('click', function () { speak(q.text); });
+    revealBtn.addEventListener('click', function () { qText.classList.toggle('visible'); });
+
+    if (!SpeechRecognition) {
+      micBtn.disabled = true;
+      micBtn.title = 'Speech recognition not supported in this browser (try Chrome)';
+    } else {
+      var recognition = new SpeechRecognition();
+      recognition.lang = 'en-US';
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      var listening = false;
+
+      recognition.onresult = function (event) {
+        var text = '';
+        for (var k = 0; k < event.results.length; k++) {
+          text += event.results[k][0].transcript;
+        }
+        input.value = text;
+        input.classList.remove('grammar-ok', 'grammar-issue');
+        feedback.textContent = '';
+        exampleEl.style.display = 'none';
+      };
+      recognition.onerror = function () { stopMic(); };
+      recognition.onend = function () {
+        stopMic();
+        if (input.value.trim() !== '') runCheck();
+      };
+
+      function startMic() {
+        listening = true;
+        micBtn.classList.add('listening');
+        micStatus.textContent = '🔴 Listening... speak your answer now';
+        try { recognition.start(); } catch (e) {}
+      }
+      function stopMic() {
+        listening = false;
+        micBtn.classList.remove('listening');
+        micStatus.textContent = '';
+        try { recognition.stop(); } catch (e) {}
+      }
+
+      micBtn.addEventListener('click', function () {
+        if (listening) { stopMic(); } else { startMic(); }
+      });
+    }
+
+    input.addEventListener('input', function () {
+      input.classList.remove('grammar-ok', 'grammar-issue');
+      feedback.textContent = '';
+      feedback.className = 'feedback';
+      exampleEl.style.display = 'none';
+    });
+
+    function runCheck() {
+      var result = checkStructure(input.value, q.subjectWords);
+      if (result.ok) {
+        input.classList.add('grammar-ok');
+        input.classList.remove('grammar-issue');
+        feedback.textContent = '✅ Great structure!';
+        feedback.className = 'feedback ok';
+        exampleEl.style.display = 'none';
+      } else {
+        input.classList.add('grammar-issue');
+        input.classList.remove('grammar-ok');
+        var html = '<ul>';
+        result.issues.forEach(function (issue) { html += '<li>' + issue + '</li>'; });
+        html += '</ul>';
+        feedback.innerHTML = html;
+        feedback.className = 'feedback';
+        exampleEl.style.display = 'block';
+      }
+    }
+
+    checkBtn.addEventListener('click', runCheck);
+
+    container.appendChild(card);
+  });
+</script>
+
+</body>
+</html>
