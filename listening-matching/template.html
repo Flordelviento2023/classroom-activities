@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Listening Matching Challenge</title>
+<style>
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 22px;
+    background: #faf8f5;
+    color: #2b2b2b;
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+    text-align: center;
+  }
+  h1 {
+    color: #a51c30;
+    font-size: 26px;
+    border-bottom: 3px solid #a51c30;
+    padding-bottom: 10px;
+    margin-bottom: 5px;
+  }
+  .instructions {
+    font-size: 17px;
+    font-style: italic;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    color: #999;
+    margin-bottom: 15px;
+  }
+  .score {
+    font-weight: bold;
+    color: #a51c30;
+  }
+  .prompt-box {
+    background: #fff;
+    border: 2px solid #eee;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+  }
+  .prompt-label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #a51c30;
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+  .audio-controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .audio-controls button {
+    font-family: Georgia, serif;
+    font-size: 16px;
+    background: #a51c30;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .audio-controls button.secondary {
+    background: #fff;
+    color: #a51c30;
+    border: 2px solid #a51c30;
+  }
+  .audio-controls button:hover { opacity: 0.85; }
+  .prompt-text {
+    font-size: 20px;
+    color: #333;
+    min-height: 30px;
+    visibility: hidden;
+  }
+  .prompt-text.visible {
+    visibility: visible;
+  }
+  .options-box {
+    background: #fdf3f0;
+    border-radius: 12px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .options-box .opt {
+    margin-bottom: 10px;
+    font-size: 18px;
+  }
+  .options-box .opt .letter {
+    font-weight: bold;
+    color: #a51c30;
+    margin-right: 8px;
+  }
+  .mic-section {
+    margin-top: 10px;
+  }
+  .timer {
+    font-size: 36px;
+    font-weight: bold;
+    color: #a51c30;
+    margin-bottom: 10px;
+    display: none;
+  }
+  #micBtn {
+    font-family: Georgia, serif;
+    font-size: 19px;
+    background: #a51c30;
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+  }
+  #micBtn.listening {
+    background: #c62828;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(198,40,40,0.5); }
+    70% { box-shadow: 0 0 0 14px rgba(198,40,40,0); }
+    100% { box-shadow: 0 0 0 0 rgba(198,40,40,0); }
+  }
+  .transcript {
+    font-size: 15px;
+    color: #555;
+    font-style: italic;
+    min-height: 22px;
+    margin-top: 10px;
+  }
+  .feedback {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 15px 0;
+    min-height: 30px;
+  }
+  .feedback.correct { color: #2e7d32; }
+  .feedback.wrong { color: #c62828; }
+  .correct-answer {
+    font-size: 16px;
+    color: #555;
+    font-style: italic;
+  }
+  #nextBtn {
+    font-family: Georgia, serif;
+    font-size: 17px;
+    background: #2b2b2b;
+    color: #fff;
+    border: none;
+    padding: 10px 26px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 12px;
+    display: none;
+  }
+  .done-box {
+    display: none;
+    font-size: 24px;
+    color: #a51c30;
+    font-weight: bold;
+    padding: 40px 20px;
+  }
+  .warning {
+    display: none;
+    font-size: 14px;
+    color: #c62828;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Listening Matching Challenge</h1>
+<div class="instructions">Listen to the sentence (or reveal it if you need to). Then say the matching response out loud &mdash; you have 30 seconds!</div>
+
+<div class="topbar">
+  <span id="progress">Item 1 of 4</span>
+  <span class="score">Score: <span id="scoreVal">4</span>/4</span>
+</div>
+
+<div class="prompt-box" id="promptBox">
+  <div class="prompt-label" id="itemLabel">1</div>
+  <div class="audio-controls">
+    <button id="playBtn">&#128264; Listen</button>
+    <button class="secondary" id="revealBtn">&#128065; Show / Hide sentence</button>
+  </div>
+  <div class="prompt-text" id="promptText"></div>
+</div>
+
+<div class="options-box" id="optionsBox">
+  <div class="opt"><span class="letter">a</span>Thanks. It's small, but it's really nice.</div>
+  <div class="opt"><span class="letter">b</span>No, it isn't. It's in Canada.</div>
+  <div class="opt"><span class="letter">c</span>No, it isn't. It's in my bedroom.</div>
+  <div class="opt"><span class="letter">d</span>Oh. Is it a big or small house?</div>
+</div>
+
+<div class="mic-section">
+  <div class="timer" id="timer">30</div>
+  <button id="micBtn">&#127908; Say the matching sentence</button>
+  <div class="transcript" id="transcript"></div>
+  <div class="feedback" id="feedback"></div>
+  <div class="correct-answer" id="correctAnswer"></div>
+  <button id="nextBtn">Next item &rarr;</button>
+  <div class="warning" id="warning">Speech recognition isn't supported in this browser. Please try Google Chrome.</div>
+</div>
+
+<div class="done-box" id="doneBox"></div>
+
+<script>
+  var ROUNDS = [
+    { number: "1", prompt: "Their house isn't old. It's new.", correctLetter: "d", correctText: "Oh. Is it a big or small house?", key: ["oh","is","big","small","house"] },
+    { number: "2", prompt: "Where's Toronto? Is it in the United States?", correctLetter: "b", correctText: "No, it isn't. It's in Canada.", key: ["no","isn't","canada"] },
+    { number: "3", prompt: "We're in your kitchen. It's really cool.", correctLetter: "a", correctText: "Thanks. It's small, but it's really nice.", key: ["thanks","small","but","really","nice"] },
+    { number: "4", prompt: "Where's your desk? Is it in your living room?", correctLetter: "c", correctText: "No, it isn't. It's in my bedroom.", key: ["no","isn't","bedroom"] }
+  ];
+
+  var CONTRACTION_MAP = {"isn't":"is not","aren't":"are not","wasn't":"was not","weren't":"were not","hasn't":"has not","haven't":"have not","hadn't":"had not","don't":"do not","doesn't":"does not","didn't":"did not","can't":"can not","won't":"will not","wouldn't":"would not","shouldn't":"should not","couldn't":"could not","i'm":"i am","you're":"you are","we're":"we are","they're":"they are","he's":"he is","she's":"she is","it's":"it is","where's":"where is","what's":"what is","who's":"who is","that's":"that is","there's":"there is","here's":"here is","i've":"i have","you've":"you have","we've":"we have","they've":"they have"};
+
+  function expandContractions(text) {
+    var words = text.toLowerCase().replace(/[?.,!]/g, "").split(/\s+/).filter(Boolean);
+    var out = [];
+    words.forEach(function (w) {
+      if (CONTRACTION_MAP[w]) { out = out.concat(CONTRACTION_MAP[w].split(" ")); }
+      else { out.push(w); }
+    });
+    return out;
+  }
+
+  function expandKeyArray(keyArr) {
+    var out = [];
+    keyArr.forEach(function (k) {
+      var lw = k.toLowerCase();
+      if (CONTRACTION_MAP[lw]) { out = out.concat(CONTRACTION_MAP[lw].split(" ")); }
+      else { out.push(lw); }
+    });
+    return out;
+  }
+
+  function keywordsInOrder(text, keyArr) {
+    var textWords = expandContractions(text);
+    var expandedKey = expandKeyArray(keyArr);
+    var idx = 0;
+    for (var i = 0; i < expandedKey.length; i++) {
+      var target = expandedKey[i];
+      var found = false;
+      for (var j = idx; j < textWords.length; j++) {
+        if (textWords[j] === target) { idx = j + 1; found = true; break; }
+      }
+      if (!found) return false;
+    }
+    return true;
+  }
+
+  var current = 0;
+  var score = 4;
+  var timerInterval = null;
+  var timeLeft = 30;
+  var recognition = null;
+  var recognizing = false;
+  var answered = false;
+
+  var progress = document.getElementById('progress');
+  var scoreVal = document.getElementById('scoreVal');
+  var itemLabel = document.getElementById('itemLabel');
+  var promptText = document.getElementById('promptText');
+  var playBtn = document.getElementById('playBtn');
+  var revealBtn = document.getElementById('revealBtn');
+  var timerEl = document.getElementById('timer');
+  var transcriptEl = document.getElementById('transcript');
+  var micBtn = document.getElementById('micBtn');
+  var feedbackEl = document.getElementById('feedback');
+  var correctAnswerEl = document.getElementById('correctAnswer');
+  var nextBtn = document.getElementById('nextBtn');
+  var promptBox = document.getElementById('promptBox');
+  var optionsBox = document.getElementById('optionsBox');
+  var micSection = document.querySelector('.mic-section');
+  var doneBox = document.getElementById('doneBox');
+  var warning = document.getElementById('warning');
+  var topbar = document.querySelector('.topbar');
+
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    warning.style.display = 'block';
+    micBtn.disabled = true;
+  } else {
+    recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onresult = function (event) {
+      var text = '';
+      for (var i = 0; i < event.results.length; i++) {
+        text += event.results[i][0].transcript;
+      }
+      transcriptEl.textContent = '"' + text + '"';
+      if (event.results[event.results.length - 1].isFinal) {
+        evaluateAnswer(text);
+      }
+    };
+    recognition.onerror = function () { stopListening(); };
+    recognition.onend = function () {
+      if (recognizing) {
+        stopListening();
+        if (!answered) evaluateAnswer(transcriptEl.textContent.replace(/"/g, ''));
+      }
+    };
+  }
+
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+      var utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'en-US';
+      utter.rate = 0.9;
+      speechSynthesis.speak(utter);
+    }
+  }
+
+  function loadRound() {
+    var r = ROUNDS[current];
+    answered = false;
+    progress.textContent = 'Item ' + (current + 1) + ' of ' + ROUNDS.length;
+    itemLabel.textContent = r.number;
+    promptText.textContent = r.prompt;
+    promptText.classList.remove('visible');
+    transcriptEl.textContent = '';
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+    correctAnswerEl.textContent = '';
+    nextBtn.style.display = 'none';
+    micBtn.style.display = 'inline-block';
+    micBtn.disabled = false;
+    micBtn.textContent = '🎤 Say the matching sentence';
+    timerEl.style.display = 'none';
+  }
+
+  playBtn.addEventListener('click', function () {
+    speak(ROUNDS[current].prompt);
+  });
+
+  revealBtn.addEventListener('click', function () {
+    promptText.classList.toggle('visible');
+  });
+
+  function startListening() {
+    if (!recognition || answered) return;
+    transcriptEl.textContent = '';
+    feedbackEl.textContent = '';
+    feedbackEl.className = 'feedback';
+    correctAnswerEl.textContent = '';
+    recognizing = true;
+    micBtn.classList.add('listening');
+    micBtn.textContent = '🔴 Listening...';
+    timerEl.style.display = 'block';
+    timeLeft = 30;
+    timerEl.textContent = timeLeft;
+
+    timerInterval = setInterval(function () {
+      timeLeft--;
+      timerEl.textContent = timeLeft;
+      if (timeLeft <= 0) {
+        recognition.stop();
+      }
+    }, 1000);
+
+    try { recognition.start(); } catch (e) {}
+  }
+
+  function stopListening() {
+    recognizing = false;
+    clearInterval(timerInterval);
+    timerEl.style.display = 'none';
+    micBtn.classList.remove('listening');
+  }
+
+  function evaluateAnswer(text) {
+    if (answered) return;
+    answered = true;
+    stopListening();
+    var r = ROUNDS[current];
+    var isCorrect = text.trim() !== '' && keywordsInOrder(text, r.key);
+
+    if (isCorrect) {
+      feedbackEl.textContent = '🌟 Great match!';
+      feedbackEl.className = 'feedback correct';
+      micBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+    } else {
+      score--;
+      scoreVal.textContent = score;
+      feedbackEl.textContent = '❌ Not quite — here\'s the match:';
+      feedbackEl.className = 'feedback wrong';
+      correctAnswerEl.textContent = r.correctLetter.toUpperCase() + '. ' + r.correctText;
+      micBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+    }
+  }
+
+  micBtn.addEventListener('click', startListening);
+
+  nextBtn.addEventListener('click', function () {
+    current++;
+    if (current >= ROUNDS.length) {
+      promptBox.style.display = 'none';
+      optionsBox.style.display = 'none';
+      micSection.style.display = 'none';
+      topbar.style.display = 'none';
+      doneBox.style.display = 'block';
+      doneBox.textContent = 'Well done! Your final score: ' + score + '/4 🎉';
+    } else {
+      loadRound();
+    }
+  });
+
+  loadRound();
+</script>
+
+</body>
+</html>
