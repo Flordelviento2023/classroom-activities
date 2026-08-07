@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Present Continuous Tic-Tac-Toe</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Comic Sans MS', 'Segoe UI', Verdana, sans-serif;
+    font-size: 22px;
+    background: linear-gradient(135deg, #ffe5f1 0%, #d9f2ff 50%, #fff9d6 100%);
+    margin: 0;
+    padding: 20px;
+    color: #2d2d2d;
+  }
+
+  .container {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .header {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    border-radius: 24px;
+    padding: 22px 28px;
+    color: #5a2a2a;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 20px rgba(255, 154, 158, 0.5);
+  }
+
+  .header h1 {
+    margin: 0 0 6px 0;
+    font-size: 30px;
+  }
+
+  .header p {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .turn-banner {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    padding: 12px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    color: #d6336c;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .cell {
+    aspect-ratio: 1;
+    background: #fff;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    border: 3px solid #ffd6e8;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s;
+  }
+
+  .cell:hover:not(.taken) {
+    transform: scale(1.03);
+    border-color: #ff8fab;
+  }
+
+  .cell.taken {
+    cursor: default;
+  }
+
+  .cell .emoji-scene {
+    font-size: 72px;
+    line-height: 1;
+  }
+
+  .cell .action-label {
+    font-size: 14px;
+    color: #888;
+    margin-top: 4px;
+    font-weight: 600;
+  }
+
+  .cell.player-mark {
+    background: #fff3cd;
+  }
+
+  .cell.player-mark .mark-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    background: rgba(255, 243, 205, 0.92);
+  }
+
+  .cell.cpu-mark .mark-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    background: rgba(214, 211, 255, 0.92);
+  }
+
+  .cell.win-cell {
+    border-color: #2ecc71 !important;
+    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.5);
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #fff;
+    border-radius: 22px;
+    padding: 28px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  }
+
+  .modal-emoji {
+    font-size: 100px;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .modal-prompt {
+    font-size: 19px;
+    color: #555;
+    margin-bottom: 6px;
+  }
+
+  .modal-prompt strong {
+    color: #d6336c;
+  }
+
+  .modal-input {
+    width: 100%;
+    font-size: 22px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 3px solid #ffd6e8;
+    margin: 14px 0;
+    text-align: center;
+    font-family: inherit;
+  }
+
+  .modal-input:focus {
+    outline: none;
+    border-color: #ff8fab;
+  }
+
+  .modal-submit-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: #fff;
+    border: none;
+    padding: 14px 36px;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(79, 172, 254, 0.4);
+  }
+
+  .modal-feedback {
+    margin-top: 14px;
+    font-size: 17px;
+    font-weight: 600;
+    min-height: 24px;
+  }
+
+  .modal-feedback.correct { color: #2ecc71; }
+  .modal-feedback.incorrect { color: #e74c3c; }
+
+  .modal-close-btn {
+    margin-top: 12px;
+    background: #2ecc71;
+    color: #fff;
+    border: none;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    display: none;
+  }
+
+  .game-over-box {
+    text-align: center;
+    font-size: 26px;
+    font-weight: 700;
+    padding: 18px;
+    border-radius: 18px;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .game-over-box.win { background: #d4f8e8; color: #1e7e44; }
+  .game-over-box.lose { background: #ffe0e0; color: #c0392b; }
+  .game-over-box.draw { background: #fff3cd; color: #856404; }
+
+  .reset-btn {
+    display: block;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #ff5e7e 0%, #ff9966 100%);
+    color: #fff;
+    border: none;
+    padding: 14px 36px;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 6px 14px rgba(255, 94, 126, 0.4);
+  }
+
+  .help-box {
+    background: #fffbe0;
+    border-radius: 16px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 16px;
+    color: #856404;
+    text-align: center;
+    border: 2px dashed #ffd700;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>⭐ Present Continuous Tic-Tac-Toe ❌</h1>
+    <p>Look at the picture. Write a sentence with "is/are + -ing" to win the square!</p>
+  </div>
+
+  <div class="help-box">
+    💡 Use: <strong>He is...</strong> / <strong>She is...</strong> / <strong>They are...</strong> + verb-ing
+  </div>
+
+  <div class="turn-banner" id="turnBanner">⭐ Your turn! Pick a square.</div>
+
+  <div class="game-over-box" id="gameOverBox"></div>
+
+  <div class="board" id="board"></div>
+
+  <button class="reset-btn" id="resetBtn" onclick="resetGame()" style="display:none;">Play Again 🔄</button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-emoji" id="modalEmoji"></div>
+    <div class="modal-prompt">What is <strong id="modalSubject"></strong> doing?</div>
+    <input type="text" class="modal-input" id="modalInput" placeholder="Write here:">
+    <br>
+    <button class="modal-submit-btn" id="modalSubmitBtn" onclick="checkSentence()">Check ✓</button>
+    <div class="modal-feedback" id="modalFeedback"></div>
+    <button class="modal-close-btn" id="modalCloseBtn" onclick="closeModalAndMark()">Great! Continue ➜</button>
+  </div>
+</div>
+
+<script>
+  // Each action: emoji of a person doing the action (gender-matched), subject pronoun, gerund form
+  const actions = [
+    { emoji: "🐇", label: "hop", subject: "he", gerund: "hopping" },
+    { emoji: "🙋‍♀️", label: "have fun", subject: "she", gerund: "having fun" },
+    { emoji: "🧗‍♂️", label: "climb", subject: "he", gerund: "climbing" },
+    { emoji: "💃", label: "dance", subject: "she", gerund: "dancing" },
+    { emoji: "🏃‍♂️", label: "run", subject: "he", gerund: "running" },
+    { emoji: "🛼", label: "roller skate", subject: "she", gerund: "roller skating" },
+    { emoji: "🦘", label: "skip", subject: "he", gerund: "skipping" },
+    { emoji: "🚶‍♀️", label: "walk", subject: "she", gerund: "walking" },
+    { emoji: "⛸️", label: "ice skate", subject: "he", gerund: "ice skating" }
+  ];
+
+  let board = Array(9).fill(null); // null, "player", "cpu"
+  let currentCell = null;
+  let gameOver = false;
+  let attemptCount = 0;
+
+  const boardEl = document.getElementById('board');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalEmoji = document.getElementById('modalEmoji');
+  const modalSubject = document.getElementById('modalSubject');
+  const modalInput = document.getElementById('modalInput');
+  const modalFeedback = document.getElementById('modalFeedback');
+  const modalSubmitBtn = document.getElementById('modalSubmitBtn');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const turnBanner = document.getElementById('turnBanner');
+  const gameOverBox = document.getElementById('gameOverBox');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function renderBoard() {
+    boardEl.innerHTML = '';
+    actions.forEach((action, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.index = i;
+
+      const scene = document.createElement('div');
+      scene.className = 'emoji-scene';
+      scene.textContent = action.emoji;
+      cell.appendChild(scene);
+
+      const labelEl = document.createElement('div');
+      labelEl.className = 'action-label';
+      labelEl.textContent = action.label;
+      cell.appendChild(labelEl);
+
+      if (board[i]) {
+        cell.classList.add('taken');
+        cell.classList.add(board[i] === 'player' ? 'player-mark' : 'cpu-mark');
+        const overlay = document.createElement('div');
+        overlay.className = 'mark-overlay';
+        overlay.textContent = board[i] === 'player' ? '⭐' : '❌';
+        cell.appendChild(overlay);
+      } else {
+        cell.addEventListener('click', () => onCellClick(i));
+      }
+
+      boardEl.appendChild(cell);
+    });
+  }
+
+  function onCellClick(index) {
+    if (gameOver || board[index]) return;
+    currentCell = index;
+    attemptCount = 0;
+    const action = actions[index];
+    modalEmoji.textContent = action.emoji;
+    modalSubject.textContent = action.subject === 'he' ? 'HE' : action.subject === 'she' ? 'SHE' : 'THEY';
+    modalInput.value = '';
+    modalFeedback.textContent = '';
+    modalFeedback.className = 'modal-feedback';
+    modalSubmitBtn.style.display = 'inline-block';
+    modalCloseBtn.style.display = 'none';
+    modalCloseBtn.textContent = 'Great! Continue ➜';
+    modalInput.disabled = false;
+    modalOverlay.classList.add('active');
+    setTimeout(() => modalInput.focus(), 100);
+  }
+
+  function normalize(str) {
+    return str.toLowerCase().replace(/[.!]/g, '').replace(/'s\b/g, ' is').replace(/\s+/g, ' ').trim();
+  }
+
+  function checkSentence() {
+    const action = actions[currentCell];
+    const userText = normalize(modalInput.value);
+
+    if (!userText) {
+      modalFeedback.textContent = "Type a sentence first! 😊";
+      modalFeedback.className = 'modal-feedback incorrect';
+      return;
+    }
+
+    const subjectOk = userText.includes(action.subject + " is") || userText.includes("they are");
+    const gerundOk = userText.includes(action.gerund.toLowerCase());
+
+    if (subjectOk && gerundOk) {
+      modalFeedback.textContent = "✓ Correct! Great sentence! ⭐";
+      modalFeedback.className = 'modal-feedback correct';
+      modalSubmitBtn.style.display = 'none';
+      modalInput.disabled = true;
+      modalCloseBtn.style.display = 'inline-block';
+      modalCloseBtn.textContent = 'Great! Continue ➜';
+      modalCloseBtn.dataset.success = "true";
+      return;
+    }
+
+    attemptCount++;
+
+    if (attemptCount === 1) {
+      // First mistake: structural hint only, no real words given away
+      let structureHint = (action.subject === 'they' ? '___ are' : '___ is') + ' ___-ing';
+      modalFeedback.textContent = `✗ Not quite. Try this pattern: "${structureHint}". Try again!`;
+      modalFeedback.className = 'modal-feedback incorrect';
+      modalInput.value = '';
+      modalInput.focus();
+    } else {
+      // Second mistake: reveal the answer, but the turn is lost
+      const correctSubject = action.subject === 'he' ? 'He is' : action.subject === 'she' ? 'She is' : 'They are';
+      modalFeedback.textContent = `✗ The correct answer was: "${correctSubject} ${action.gerund}." You lose this turn!`;
+      modalFeedback.className = 'modal-feedback incorrect';
+      modalSubmitBtn.style.display = 'none';
+      modalInput.disabled = true;
+      modalCloseBtn.style.display = 'inline-block';
+      modalCloseBtn.textContent = 'Okay, continue ➜';
+      modalCloseBtn.dataset.success = "false";
+      modalCloseBtn.dataset.turnLost = "true";
+    }
+  }
+
+  function closeModalAndMark() {
+    const success = modalCloseBtn.dataset.success === "true";
+    const turnLost = modalCloseBtn.dataset.turnLost === "true";
+    modalOverlay.classList.remove('active');
+    modalCloseBtn.dataset.turnLost = "false";
+
+    if (success) {
+      board[currentCell] = 'player';
+      renderBoard();
+
+      if (checkWinner('player')) {
+        endGame('win');
+        return;
+      }
+      if (board.every(c => c)) {
+        endGame('draw');
+        return;
+      }
+
+      turnBanner.textContent = "🤔 Computer is thinking...";
+      setTimeout(cpuMove, 800);
+    } else if (turnLost) {
+      // Player failed twice: the cell goes to the computer instead
+      board[currentCell] = 'cpu';
+      renderBoard();
+
+      if (checkWinner('cpu')) {
+        endGame('lose');
+        return;
+      }
+      if (board.every(c => c)) {
+        endGame('draw');
+        return;
+      }
+
+      turnBanner.textContent = "⭐ Your turn! Pick a square.";
+    }
+  }
+
+  function cpuMove() {
+    const move = getCpuMove();
+    board[move] = 'cpu';
+    renderBoard();
+
+    if (checkWinner('cpu')) {
+      endGame('lose');
+      return;
+    }
+    if (board.every(c => c)) {
+      endGame('draw');
+      return;
+    }
+
+    turnBanner.textContent = "⭐ Your turn! Pick a square.";
+  }
+
+  function getCpuMove() {
+    const empty = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
+
+    // 1. Try to win
+    for (const i of empty) {
+      board[i] = 'cpu';
+      if (checkWinner('cpu')) { board[i] = null; return i; }
+      board[i] = null;
+    }
+
+    // 2. Block player from winning
+    for (const i of empty) {
+      board[i] = 'player';
+      if (checkWinner('player')) { board[i] = null; return i; }
+      board[i] = null;
+    }
+
+    // 3. Take center
+    if (board[4] === null) return 4;
+
+    // 4. Take a corner
+    const corners = [0, 2, 6, 8].filter(i => board[i] === null);
+    if (corners.length) return corners[Math.floor(Math.random() * corners.length)];
+
+    // 5. Take any remaining
+    return empty[Math.floor(Math.random() * empty.length)];
+  }
+
+  function checkWinner(player) {
+    const lines = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+    return lines.some(line => line.every(i => board[i] === player));
+  }
+
+  function endGame(result) {
+    gameOver = true;
+    turnBanner.textContent = '';
+    gameOverBox.style.display = 'block';
+    resetBtn.style.display = 'block';
+
+    if (result === 'win') {
+      gameOverBox.className = 'game-over-box win';
+      gameOverBox.textContent = '🎉 You win! Amazing job! ⭐';
+    } else if (result === 'lose') {
+      gameOverBox.className = 'game-over-box lose';
+      gameOverBox.textContent = '🤖 The computer wins this time! Try again!';
+    } else {
+      gameOverBox.className = 'game-over-box draw';
+      gameOverBox.textContent = "🤝 It's a draw! Good game!";
+    }
+  }
+
+  function resetGame() {
+    board = Array(9).fill(null);
+    gameOver = false;
+    gameOverBox.style.display = 'none';
+    resetBtn.style.display = 'none';
+    turnBanner.textContent = '⭐ Your turn! Pick a square.';
+    renderBoard();
+  }
+
+  modalInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (modalSubmitBtn.style.display !== 'none') {
+        checkSentence();
+      } else {
+        closeModalAndMark();
+      }
+    }
+  });
+
+  renderBoard();
+</script>
+
+</body>
+</html>
