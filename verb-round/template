@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verb Round</title>
+<style>
+  :root{
+    --paper:#fbf9f4;
+    --ink:#2b2620;
+    --accent:#a51c30;
+    --accent-dark:#7e1524;
+    --rule:#d8cfc0;
+    --green:#2f7d4f;
+    --green-bg:#e7f3ea;
+    --red:#a51c30;
+    --red-bg:#fbe9ea;
+  }
+  body{
+    margin:0;
+    padding:32px 16px 64px;
+    background:#efe9dc;
+    font-family: Georgia, 'Times New Roman', serif;
+    color:var(--ink);
+  }
+  .wrap{
+    max-width:640px;
+    margin:0 auto;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    box-shadow:0 2px 10px rgba(43,38,32,0.12);
+    padding:28px 32px 32px;
+  }
+  h1{
+    font-size:26px;
+    color:var(--accent);
+    text-align:center;
+    margin:0 0 6px;
+    border-bottom:2px solid var(--accent);
+    padding-bottom:14px;
+  }
+  .subtitle{
+    text-align:center;
+    font-style:italic;
+    font-size:15px;
+    color:#5a5348;
+    margin:14px 0 22px;
+  }
+  .statbar{
+    display:flex;
+    justify-content:center;
+    gap:28px;
+    margin-bottom:20px;
+    font-size:15px;
+  }
+  .statbar .stat{
+    text-align:center;
+  }
+  .statbar .label{
+    display:block;
+    font-size:12px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:#5a5348;
+    margin-bottom:2px;
+  }
+  .statbar .value{
+    font-weight:bold;
+    font-size:20px;
+    color:var(--ink);
+  }
+  #screen-start, #screen-end{
+    text-align:center;
+  }
+  #screen-start p, #screen-end p{
+    font-size:17px;
+    line-height:1.6;
+    margin:0 0 20px;
+  }
+  button{
+    font-family:Georgia, serif;
+    cursor:pointer;
+    border-radius:6px;
+  }
+  .btn-primary{
+    background:var(--accent);
+    color:#fff;
+    border:1px solid var(--accent);
+    font-size:17px;
+    font-weight:bold;
+    padding:12px 28px;
+  }
+  .btn-primary:hover{ background:var(--accent-dark); }
+  .btn-secondary{
+    background:#fff;
+    color:var(--accent);
+    border:1px solid var(--accent);
+    font-size:15px;
+    padding:10px 20px;
+  }
+  .btn-secondary:hover{ background:#fdf1f2; }
+  #screen-game{ display:none; }
+  .round-info{
+    text-align:center;
+    font-size:14px;
+    color:#5a5348;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .listen-row{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  #btn-play{
+    font-size:16px;
+    padding:12px 22px;
+  }
+  #btn-replay{
+    font-size:14px;
+    padding:12px 18px;
+  }
+  #feedback{
+    text-align:center;
+    min-height:22px;
+    font-weight:bold;
+    font-size:15px;
+    margin-bottom:14px;
+  }
+  #feedback.ok{ color:var(--green); }
+  #feedback.no{ color:var(--red); }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .chip{
+    background:#fff;
+    border:2px solid var(--rule);
+    border-radius:8px;
+    padding:16px 10px;
+    font-size:17px;
+    font-weight:bold;
+    color:var(--ink);
+    text-align:center;
+    line-height:1.3;
+  }
+  .chip:hover{ border-color:var(--accent); }
+  .chip.correct{ background:var(--green-bg); border-color:var(--green); color:var(--green); }
+  .chip.wrong{ background:var(--red-bg); border-color:var(--red); color:var(--red); }
+  .chip:disabled{ cursor:default; }
+  #screen-end .big-time{
+    font-size:40px;
+    font-weight:bold;
+    color:var(--accent);
+    margin:6px 0 4px;
+  }
+  #screen-end .best-note{
+    font-size:15px;
+    color:#5a5348;
+    margin-bottom:24px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Verb Round</h1>
+  <p class="subtitle">Listen closely to the verb — which one, and in which form?</p>
+
+  <div id="screen-start">
+    <p>You'll hear 7 short chunks about the company Innocent. In fast, connected speech, verb endings like <em>-s</em>, <em>-ing</em> and <em>'s</em> are easy to miss.<br>
+    Listen carefully and tap the exact verb form you hear. Try to beat your own time!</p>
+    <button class="btn-primary" id="btn-start">Start</button>
+  </div>
+
+  <div id="screen-game">
+    <div class="statbar">
+      <div class="stat"><span class="label">Time</span><span class="value" id="timer">0.0s</span></div>
+      <div class="stat"><span class="label">Round</span><span class="value" id="round-count">1 / 7</span></div>
+    </div>
+    <div class="listen-row">
+      <button class="btn-primary" id="btn-play">🔊 Listen</button>
+      <button class="btn-secondary" id="btn-replay">↺ Listen again</button>
+    </div>
+    <div id="feedback">&nbsp;</div>
+    <div class="grid" id="options"></div>
+  </div>
+
+  <div id="screen-end">
+    <p>Round complete!</p>
+    <div class="big-time" id="final-time">0.0s</div>
+    <p class="best-note" id="best-note"></p>
+    <button class="btn-primary" id="btn-again">Play again</button>
+  </div>
+
+</div>
+
+<script>
+  var TARGET_VERBS = [
+    {
+      value: "are looking",
+      sentence: "This month we are looking at the role of ethics in business.",
+      distractors: ["look", "looked", "are watching", "were looking"]
+    },
+    {
+      value: "operates",
+      sentence: "Innocent now operates from its headquarters in London as a subsidiary of Coca-Cola.",
+      distractors: ["is operating", "operated", "opens", "is opening"]
+    },
+    {
+      value: "continues",
+      sentence: "Innocent continues to innovate.",
+      distractors: ["is continuing", "continued", "manages", "is managing"]
+    },
+    {
+      value: "'s constantly working",
+      sentence: "The company's constantly working on new lines.",
+      distractors: ["constantly works", "constantly worked", "'s constantly looking", "is constantly planning"]
+    },
+    {
+      value: "sells",
+      sentence: "Innocent sells to over ten thousand retailers in thirteen European countries.",
+      distractors: ["is selling", "sold", "supplies", "is supplying"]
+    },
+    {
+      value: "is constantly growing",
+      sentence: "...and its market is constantly growing.",
+      distractors: ["constantly grows", "constantly grew", "is constantly expanding", "constantly expands"]
+    },
+    {
+      value: "uses",
+      sentence: "It uses only 100% natural products.",
+      distractors: ["is using", "used", "makes", "is making"]
+    }
+  ];
+
+  var rounds = [];
+  var currentRound = 0;
+  var startTime = 0;
+  var timerInterval = null;
+  var bestTime = null;
+
+  function shuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function buildRounds(){
+    rounds = shuffle(TARGET_VERBS);
+  }
+
+  function optionsForRound(item){
+    var picks = shuffle(item.distractors).slice(0, 5);
+    picks.push(item.value);
+    return shuffle(picks);
+  }
+
+  function speak(text){
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-GB';
+    utter.rate = 0.9;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function formatTime(ms){
+    return (ms / 1000).toFixed(1) + 's';
+  }
+
+  function updateTimerDisplay(){
+    var el = document.getElementById('timer');
+    el.textContent = formatTime(Date.now() - startTime);
+  }
+
+  function renderRound(){
+    var round = rounds[currentRound];
+    document.getElementById('round-count').textContent = (currentRound + 1) + ' / ' + rounds.length;
+    document.getElementById('feedback').textContent = '\u00A0';
+    document.getElementById('feedback').className = '';
+
+    var optionsEl = document.getElementById('options');
+    optionsEl.innerHTML = '';
+    var opts = optionsForRound(round);
+    opts.forEach(function(opt){
+      var btn = document.createElement('button');
+      btn.className = 'chip';
+      btn.textContent = opt;
+      btn.addEventListener('click', function(){ handleAnswer(opt, round.value, btn); });
+      optionsEl.appendChild(btn);
+    });
+
+    speak(round.sentence);
+  }
+
+  function handleAnswer(selected, correct, btnEl){
+    var fb = document.getElementById('feedback');
+    if (selected === correct){
+      btnEl.classList.add('correct');
+      fb.textContent = 'Correct!';
+      fb.className = 'ok';
+      Array.prototype.forEach.call(document.querySelectorAll('.chip'), function(c){ c.disabled = true; });
+      setTimeout(nextRound, 700);
+    } else {
+      btnEl.classList.add('wrong');
+      btnEl.disabled = true;
+      fb.textContent = 'Try again — listen for the exact ending.';
+      fb.className = 'no';
+    }
+  }
+
+  function nextRound(){
+    currentRound++;
+    if (currentRound >= rounds.length){
+      finishGame();
+    } else {
+      renderRound();
+    }
+  }
+
+  function startGame(){
+    buildRounds();
+    currentRound = 0;
+    document.getElementById('screen-start').style.display = 'none';
+    document.getElementById('screen-end').style.display = 'none';
+    document.getElementById('screen-game').style.display = 'block';
+    startTime = Date.now();
+    timerInterval = setInterval(updateTimerDisplay, 100);
+    renderRound();
+  }
+
+  function finishGame(){
+    clearInterval(timerInterval);
+    var elapsed = Date.now() - startTime;
+    document.getElementById('screen-game').style.display = 'none';
+    document.getElementById('screen-end').style.display = 'block';
+    document.getElementById('final-time').textContent = formatTime(elapsed);
+
+    var note = document.getElementById('best-note');
+    if (bestTime === null || elapsed < bestTime){
+      bestTime = elapsed;
+      note.textContent = 'New best time this session!';
+    } else {
+      note.textContent = 'Your best time this session: ' + formatTime(bestTime);
+    }
+  }
+
+  document.getElementById('btn-start').addEventListener('click', startGame);
+  document.getElementById('btn-again').addEventListener('click', startGame);
+  document.getElementById('btn-play').addEventListener('click', function(){
+    speak(rounds[currentRound].sentence);
+  });
+  document.getElementById('btn-replay').addEventListener('click', function(){
+    speak(rounds[currentRound].sentence);
+  });
+</script>
+</body>
+</html>
