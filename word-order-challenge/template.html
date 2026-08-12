@@ -49,13 +49,13 @@
   .scrambled-area{margin-bottom:16px;}
   .area-label{font-size:0.78rem;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
   .scrambled-words{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;}
-  .word-tile{background:var(--dark);color:white;border-radius:8px;padding:8px 14px;font-family:"Fredoka One",cursive;font-size:1rem;cursor:grab;user-select:none;transition:all 0.2s;box-shadow:0 3px 0 rgba(0,0,0,0.3);}
+  .word-tile{background:var(--dark);color:white;border-radius:8px;padding:8px 14px;font-family:"Fredoka One",cursive;font-size:1rem;cursor:pointer;user-select:none;transition:all 0.2s;box-shadow:0 3px 0 rgba(0,0,0,0.3);}
   .word-tile:hover{transform:translateY(-2px);box-shadow:0 5px 0 rgba(0,0,0,0.3);background:#444;}
-  .word-tile.dragging{opacity:0.4;}
+  .word-tile.selected{background:var(--gold);color:var(--dark);box-shadow:0 3px 0 var(--gold-dark);transform:translateY(-2px);}
   .word-tile.used{opacity:0.15;pointer-events:none;}
   /* Answer drop */
   .answer-area{margin-bottom:16px;}
-  .answer-drop{min-height:52px;border:2px dashed var(--border);border-radius:12px;background:#f8f9fa;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;transition:all 0.2s;}
+  .answer-drop{min-height:52px;border:2px dashed var(--border);border-radius:12px;background:#f8f9fa;padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;transition:all 0.2s;cursor:pointer;}
   .answer-drop.drag-over{border-color:var(--blue);background:var(--blue-light);}
   .drop-hint{font-size:0.82rem;color:#bbb;font-weight:700;}
   .placed-tile{background:var(--blue);color:white;border-radius:8px;padding:8px 14px;font-family:"Fredoka One",cursive;font-size:1rem;display:flex;align-items:center;gap:6px;box-shadow:0 2px 0 var(--blue-dark);}
@@ -131,7 +131,7 @@
     <div class="intro-steps">
       <div class="intro-step"><div class="step-num">1</div>Look at the scrambled words and figure out the correct order</div>
       <div class="intro-step"><div class="step-num">2</div>&#127908; Press the mic and <strong>say the full sentence out loud!</strong></div>
-      <div class="intro-step"><div class="step-num">3</div>If the mic did not catch you well &mdash; <strong>drag the words</strong> to build the sentence and press Check!</div>
+      <div class="intro-step"><div class="step-num">3</div>If the mic did not catch you well &mdash; <strong>tap a word, then tap the box</strong> to build the sentence and press Check!</div>
       <div class="intro-step"><div class="step-num">4</div>You have <strong>45 seconds</strong> per question!</div>
     </div>
     <button class="btn-start" id="btnStart">Let us Go! &#127908;</button>
@@ -155,13 +155,13 @@
     </div>
     <!-- Retry hint -->
     <div class="retry-hint" id="retryHint">
-      &#128073; Mic did not catch you? Drag the words below to build the sentence!
+      &#128073; Mic did not catch you? Tap the words below to build the sentence!
     </div>
     <!-- Drag & drop — SECONDARY (starts dimmed) -->
     <div class="drag-section" id="dragSection">
       <div class="answer-area">
-        <div class="area-label">&#9999;&#65039; Step 2 (if needed): Drag to build your sentence:</div>
-        <div class="answer-drop" id="answerDrop"><span class="drop-hint">Drag words here...</span></div>
+        <div class="area-label">&#9999;&#65039; Step 2 (if needed): Tap a word, then tap here:</div>
+        <div class="answer-drop" id="answerDrop"><span class="drop-hint">Tap a word above, then tap here...</span></div>
       </div>
       <div class="action-btns">
         <button class="btn-check-ans" id="btnCheckAns">&#10003; Check</button>
@@ -225,15 +225,14 @@ document.getElementById("btnClearAns").addEventListener("click",clearAnswer);
 document.getElementById("btnNextQ").addEventListener("click",nextQuestion);
 
 var answerDrop=document.getElementById("answerDrop");
-answerDrop.addEventListener("dragenter",function(e){e.preventDefault();answerDrop.classList.add("drag-over");});
-answerDrop.addEventListener("dragover",function(e){e.preventDefault();answerDrop.classList.add("drag-over");});
-answerDrop.addEventListener("dragleave",function(){answerDrop.classList.remove("drag-over");});
-answerDrop.addEventListener("drop",function(e){
-  e.preventDefault();answerDrop.classList.remove("drag-over");
-  var id=e.dataTransfer.getData("text/plain");
-  var tile=document.getElementById(id);
+var selectedTileId=null;
+answerDrop.addEventListener("click",function(){
+  if(!selectedTileId)return;
+  var tile=document.getElementById(selectedTileId);
   if(!tile||tile.classList.contains("used"))return;
-  addWordToAnswer(id,tile.textContent);
+  addWordToAnswer(selectedTileId,tile.textContent);
+  tile.classList.remove("selected");
+  selectedTileId=null;
 });
 
 function startGame(){
@@ -273,15 +272,18 @@ function showQuestion(){
   scrambled.forEach(function(w,i){
     var tile=document.createElement("div");
     tile.className="word-tile"; tile.textContent=w; tile.id="tile-"+i;
-    tile.setAttribute("draggable","true");
-    tile.addEventListener("dragstart",function(e){
-      e.dataTransfer.setData("text/plain",tile.id);
-      setTimeout(function(){tile.classList.add("dragging");},0);
+    tile.addEventListener("click",function(){
+      if(tile.classList.contains("used"))return;
+      if(selectedTileId===tile.id){
+        tile.classList.remove("selected");
+        selectedTileId=null;
+        return;
+      }
+      var prev=selectedTileId?document.getElementById(selectedTileId):null;
+      if(prev)prev.classList.remove("selected");
+      tile.classList.add("selected");
+      selectedTileId=tile.id;
     });
-    tile.addEventListener("dragend",function(){tile.classList.remove("dragging");});
-    tile.addEventListener("touchstart",touchStart,{passive:true});
-    tile.addEventListener("touchmove",touchMove,{passive:false});
-    tile.addEventListener("touchend",touchEnd);
     container.appendChild(tile);
   });
   resetDropZone();
@@ -300,18 +302,20 @@ function addWordToAnswer(tileId,word){
 
 function resetDropZone(){
   placedWords=[];
-  answerDrop.innerHTML='<span class="drop-hint">Drag words here...</span>';
-  document.querySelectorAll(".word-tile").forEach(function(t){t.classList.remove("used");});
+  selectedTileId=null;
+  answerDrop.innerHTML='<span class="drop-hint">Tap a word above, then tap here...</span>';
+  document.querySelectorAll(".word-tile").forEach(function(t){t.classList.remove("used","selected");});
 }
 
 function renderAnswerDrop(){
-  if(placedWords.length===0){answerDrop.innerHTML='<span class="drop-hint">Drag words here...</span>';return;}
+  if(placedWords.length===0){answerDrop.innerHTML='<span class="drop-hint">Tap a word above, then tap here...</span>';return;}
   answerDrop.innerHTML="";
   placedWords.forEach(function(pw,idx){
     var placed=document.createElement("div");
     placed.className="placed-tile";
     placed.innerHTML='<span>'+pw.word+'</span><button class="remove-tile" data-idx="'+idx+'">&#10005;</button>';
-    placed.querySelector(".remove-tile").addEventListener("click",function(){
+    placed.querySelector(".remove-tile").addEventListener("click",function(e){
+      e.stopPropagation();
       var i=parseInt(this.getAttribute("data-idx"));
       var removed=placedWords.splice(i,1)[0];
       var orig=document.getElementById(removed.tileId);
@@ -325,38 +329,9 @@ function renderAnswerDrop(){
 function clearAnswer(){
   placedWords.forEach(function(pw){var t=document.getElementById(pw.tileId);if(t)t.classList.remove("used");});
   placedWords=[];
+  selectedTileId=null;
+  document.querySelectorAll(".word-tile").forEach(function(t){t.classList.remove("selected");});
   renderAnswerDrop();
-}
-
-var touchDragTile=null,touchDragClone=null;
-function touchStart(e){
-  var tile=e.currentTarget;
-  if(tile.classList.contains("used"))return;
-  touchDragTile=tile;
-  var touch=e.touches[0];
-  touchDragClone=tile.cloneNode(true);
-  touchDragClone.style.cssText="position:fixed;opacity:0.85;pointer-events:none;z-index:9999;border-radius:8px;width:"+tile.offsetWidth+"px;left:"+(touch.clientX-tile.offsetWidth/2)+"px;top:"+(touch.clientY-20)+"px;";
-  document.body.appendChild(touchDragClone);
-  tile.classList.add("dragging");
-}
-function touchMove(e){
-  if(!touchDragClone)return;e.preventDefault();
-  var touch=e.touches[0];
-  touchDragClone.style.left=(touch.clientX-touchDragClone.offsetWidth/2)+"px";
-  touchDragClone.style.top=(touch.clientY-20)+"px";
-  var el=document.elementFromPoint(touch.clientX,touch.clientY);
-  var drop=el?el.closest("#answerDrop"):null;
-  answerDrop.classList.toggle("drag-over",!!drop);
-}
-function touchEnd(e){
-  if(!touchDragTile||!touchDragClone)return;
-  touchDragTile.classList.remove("dragging");
-  var touch=e.changedTouches[0];
-  var el=document.elementFromPoint(touch.clientX,touch.clientY);
-  var drop=el?el.closest("#answerDrop"):null;
-  if(drop)addWordToAnswer(touchDragTile.id,touchDragTile.textContent);
-  touchDragClone.remove();touchDragClone=null;touchDragTile=null;
-  answerDrop.classList.remove("drag-over");
 }
 
 function startTimer(){
@@ -473,7 +448,7 @@ function handleMicResult(text){
     document.getElementById("micSection").classList.add("disabled");
     enableDrag();
     var fb=document.getElementById("feedbackMsg");
-    fb.innerHTML="&#128249; Not quite! Try dragging the words below.";
+    fb.innerHTML="&#128249; Not quite! Try tapping the words below.";
     fb.className="feedback-msg show wrong";
   }
 }
@@ -481,7 +456,7 @@ function handleMicResult(text){
 function checkDragAnswer(){
   if(answered)return;
   if(placedWords.length===0){
-    document.getElementById("feedbackMsg").textContent="Drag the words first!";
+    document.getElementById("feedbackMsg").textContent="Tap the words first!";
     document.getElementById("feedbackMsg").className="feedback-msg show wrong";
     return;
   }
