@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phrase Lock — Use It or Lose It</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1b3a57;
+    --navy-light:#2b5578;
+    --coral:#ff6f5e;
+    --coral-dark:#e5543f;
+    --yellow:#ffc857;
+    --bg:#f4f7fa;
+    --card:#ffffff;
+    --correct:#3fb681;
+    --wrong:#e5543f;
+    --text:#1b3a57;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Nunito',sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding:28px 16px 60px;
+    min-height:100vh;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  h1{
+    font-family:'Fredoka One',cursive;
+    color:var(--navy);
+    font-size:26px;
+    text-align:center;
+    margin-bottom:2px;
+  }
+  .subtitle{
+    text-align:center;
+    font-size:15px;
+    color:var(--navy-light);
+    font-weight:700;
+    margin-bottom:22px;
+  }
+
+  /* progress bar */
+  .progress-wrap{
+    display:flex;
+    gap:6px;
+    margin-bottom:26px;
+  }
+  .progress-seg{
+    flex:1;
+    height:10px;
+    border-radius:6px;
+    background:#dbe5ee;
+    transition:background .2s ease;
+  }
+  .progress-seg.done{background:var(--correct);}
+  .progress-seg.current{background:var(--yellow);}
+
+  /* card */
+  .game-card{
+    background:var(--card);
+    border-radius:22px;
+    padding:26px 26px 22px;
+    box-shadow:0 6px 20px rgba(27,58,87,0.12);
+    text-align:center;
+  }
+  .card-num{
+    font-family:'Fredoka One',cursive;
+    color:var(--coral);
+    font-size:14px;
+    margin-bottom:10px;
+  }
+  .situation-label{
+    font-family:'Fredoka One',cursive;
+    font-size:13px;
+    color:var(--navy-light);
+    letter-spacing:0.5px;
+    margin-bottom:8px;
+  }
+  .situation-text{
+    font-size:20px;
+    font-weight:700;
+    color:var(--navy);
+    line-height:1.5;
+    margin-bottom:20px;
+  }
+
+  .lock-icon{
+    font-size:36px;
+    margin-bottom:6px;
+  }
+
+  .required-hint{
+    display:none;
+    background:#fff3d6;
+    border-radius:14px;
+    padding:12px 16px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--coral-dark);
+    margin-bottom:16px;
+  }
+  .required-hint.show{display:block;}
+
+  textarea{
+    width:100%;
+    font-family:'Nunito',sans-serif;
+    font-size:18px;
+    padding:14px 16px;
+    border-radius:14px;
+    border:2px solid #cdd9e3;
+    resize:none;
+    min-height:70px;
+    text-align:left;
+  }
+  textarea:focus{outline:none;border-color:var(--coral);}
+
+  .feedback{
+    min-height:26px;
+    font-weight:800;
+    font-size:16px;
+    margin-top:12px;
+  }
+  .feedback.correct-text{color:var(--correct);}
+  .feedback.incorrect-text{color:var(--wrong);}
+
+  .submit-btn{
+    font-family:'Fredoka One',cursive;
+    font-size:19px;
+    background:var(--coral);
+    color:#fff;
+    border:none;
+    padding:14px 38px;
+    border-radius:16px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--coral-dark);
+    margin-top:16px;
+    transition:transform .1s ease;
+  }
+  .submit-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--coral-dark);}
+
+  /* summary screen */
+  .summary-card{
+    display:none;
+    background:var(--navy);
+    color:#fff;
+    border-radius:22px;
+    padding:32px 28px;
+    text-align:center;
+  }
+  .summary-card h2{
+    font-family:'Fredoka One',cursive;
+    color:var(--yellow);
+    font-size:24px;
+    margin-top:0;
+  }
+  .stat-row{
+    display:flex;
+    justify-content:center;
+    gap:24px;
+    margin:20px 0;
+  }
+  .stat{
+    background:rgba(255,255,255,0.08);
+    border-radius:16px;
+    padding:16px 20px;
+    min-width:100px;
+  }
+  .stat-num{
+    font-family:'Fredoka One',cursive;
+    font-size:28px;
+    color:var(--yellow);
+  }
+  .stat-label{
+    font-size:13px;
+    color:#dce8f2;
+    margin-top:4px;
+  }
+  .restart-btn{
+    font-family:'Fredoka One',cursive;
+    font-size:16px;
+    background:var(--coral);
+    color:#fff;
+    border:none;
+    padding:10px 26px;
+    border-radius:14px;
+    cursor:pointer;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Phrase Lock 🔒</h1>
+  <div class="subtitle">Use the new phrase to unlock the next situation</div>
+
+  <div class="progress-wrap" id="progressWrap"></div>
+
+  <div class="game-card" id="gameCard">
+    <div class="card-num" id="cardNum">Card 1 of 8</div>
+    <div class="lock-icon">🔒</div>
+    <div class="situation-label">SITUATION</div>
+    <div class="situation-text" id="situationText"></div>
+
+    <div class="required-hint" id="requiredHint"></div>
+
+    <textarea id="answerInput" placeholder="Write your response..."></textarea>
+    <div class="feedback" id="feedback"></div>
+    <button class="submit-btn" id="submitBtn">Unlock ➜</button>
+  </div>
+
+  <div class="summary-card" id="summaryCard">
+    <h2>🎉 All Unlocked!</h2>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-num" id="firstTryCount">0</div>
+        <div class="stat-label">First-try correct</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num" id="retryCount">0</div>
+        <div class="stat-label">Needed a retry</div>
+      </div>
+    </div>
+    <button class="restart-btn" id="restartBtn">Play Again</button>
+  </div>
+</div>
+
+<script>
+  // ============================================
+  // DECK — swap this array to reuse for any session/topic
+  // Each card: situation (the prompt), requiredPhrase (must appear
+  // in the student's answer, case-insensitive), hint (shown after 1 wrong try)
+  // ============================================
+  const deck = [
+    {
+      situation: "A new hire just finished their first training shift. Tell them to complete their online onboarding tonight.",
+      requiredPhrase: "i need you to",
+      hint: 'Start with: "I need you to..."'
+    },
+    {
+      situation: "Remind a team member that their Learning Tool module is due before Friday.",
+      requiredPhrase: "make sure",
+      hint: 'Use: "Can you make sure..."'
+    },
+    {
+      situation: "Explain to a new server that they'll have a Personal Development Plan review with you next month.",
+      requiredPhrase: "it's important that you",
+      hint: 'Use: "It\'s important that you..."'
+    },
+    {
+      situation: "Ask a coworker to walk you through how they completed the New Hire Training checklist.",
+      requiredPhrase: "walk me through",
+      hint: 'Use: "Can you walk me through..."'
+    },
+    {
+      situation: "Tell a trainee once they finish stocking, you want them to report back to you.",
+      requiredPhrase: "let me know",
+      hint: 'Use: "...let me know once you\'re done."'
+    },
+    {
+      situation: "You're interviewing a candidate for a server position. Ask about their availability professionally.",
+      requiredPhrase: "i'd like to ask",
+      hint: 'Use: "I\'d like to ask you about..."'
+    },
+    {
+      situation: "A manager asks if the new hire is ready for the floor. Give a diplomatic, professional answer — not just \"yes\" or \"no.\"",
+      requiredPhrase: "at this point",
+      hint: 'Use: "At this point, I\'d say..."'
+    },
+    {
+      situation: "Tell a team member you noticed they've been improving and you want to recognize that.",
+      requiredPhrase: "i wanted to point out",
+      hint: 'Use: "I wanted to point out that..."'
+    }
+  ];
+  // ============================================
+
+  let current = 0;
+  let usedRetry = new Array(deck.length).fill(false);
+  let attemptedOnce = false;
+
+  const progressWrap = document.getElementById('progressWrap');
+  const cardNum = document.getElementById('cardNum');
+  const situationText = document.getElementById('situationText');
+  const requiredHint = document.getElementById('requiredHint');
+  const answerInput = document.getElementById('answerInput');
+  const feedback = document.getElementById('feedback');
+  const submitBtn = document.getElementById('submitBtn');
+  const gameCard = document.getElementById('gameCard');
+  const summaryCard = document.getElementById('summaryCard');
+
+  function buildProgress(){
+    progressWrap.innerHTML = '';
+    deck.forEach((_, i) => {
+      const seg = document.createElement('div');
+      seg.className = 'progress-seg';
+      if (i < current) seg.classList.add('done');
+      if (i === current) seg.classList.add('current');
+      progressWrap.appendChild(seg);
+    });
+  }
+
+  function loadCard(){
+    const card = deck[current];
+    cardNum.textContent = `Card ${current + 1} of ${deck.length}`;
+    situationText.textContent = card.situation;
+    requiredHint.textContent = card.hint;
+    requiredHint.classList.remove('show');
+    answerInput.value = '';
+    feedback.textContent = '';
+    feedback.className = 'feedback';
+    attemptedOnce = false;
+    buildProgress();
+  }
+
+  function checkAnswer(){
+    const card = deck[current];
+    const val = answerInput.value.trim().toLowerCase();
+
+    if (!val){
+      feedback.textContent = 'Write a full response first.';
+      feedback.className = 'feedback incorrect-text';
+      return;
+    }
+
+    if (val.includes(card.requiredPhrase)){
+      feedback.textContent = '🔓 Unlocked! Great use of the phrase.';
+      feedback.className = 'feedback correct-text';
+      submitBtn.disabled = true;
+      setTimeout(() => {
+        current++;
+        submitBtn.disabled = false;
+        if (current >= deck.length){
+          showSummary();
+        } else {
+          loadCard();
+        }
+      }, 900);
+    } else {
+      usedRetry[current] = true;
+      feedback.textContent = "Not quite — you're still using the phrase you already know. Try again with the new one.";
+      feedback.className = 'feedback incorrect-text';
+      if (attemptedOnce){
+        requiredHint.classList.add('show');
+      }
+      attemptedOnce = true;
+    }
+  }
+
+  function showSummary(){
+    gameCard.style.display = 'none';
+    progressWrap.style.display = 'none';
+    summaryCard.style.display = 'block';
+    const retries = usedRetry.filter(Boolean).length;
+    document.getElementById('firstTryCount').textContent = deck.length - retries;
+    document.getElementById('retryCount').textContent = retries;
+  }
+
+  submitBtn.addEventListener('click', checkAnswer);
+  answerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      checkAnswer();
+    }
+  });
+
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    current = 0;
+    usedRetry = new Array(deck.length).fill(false);
+    gameCard.style.display = 'block';
+    progressWrap.style.display = 'flex';
+    summaryCard.style.display = 'none';
+    loadCard();
+  });
+
+  loadCard();
+</script>
+</body>
+</html>
