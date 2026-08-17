@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Moka — People & Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#1b3a57;--navy-light:#2b5578;--coral:#ff6f5e;--coral-dark:#e5543f;
+    --yellow:#ffc857;--bg:#f4f7fa;--card:#ffffff;--text:#1b3a57;--correct:#3fb681;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);padding:28px 16px 60px;}
+  .wrap{max-width:680px;margin:0 auto;}
+  h1{font-family:'Fredoka One',cursive;color:var(--navy);font-size:26px;text-align:center;margin-bottom:2px;}
+  .subtitle{text-align:center;font-size:15px;color:var(--navy-light);font-weight:700;margin-bottom:24px;}
+
+  .instruction-note{
+    text-align:center;
+    font-size:14px;
+    color:var(--navy-light);
+    font-style:italic;
+    margin-bottom:20px;
+  }
+
+  .prompt-box{
+    background:var(--navy);
+    color:#fff;
+    border-radius:20px;
+    padding:24px 26px;
+    font-size:17px;
+    line-height:1.7;
+    box-shadow:0 4px 14px rgba(27,58,87,0.15);
+    position:relative;
+  }
+  .prompt-box .label{
+    font-family:'Fredoka One',cursive;
+    color:var(--yellow);
+    font-size:13px;
+    letter-spacing:0.5px;
+    margin-bottom:12px;
+    display:block;
+  }
+
+  .copy-btn{
+    display:block;
+    margin:18px auto 0;
+    font-family:'Fredoka One',cursive;
+    font-size:17px;
+    background:var(--coral);
+    color:#fff;
+    border:none;
+    padding:12px 32px;
+    border-radius:14px;
+    cursor:pointer;
+    box-shadow:0 4px 0 var(--coral-dark);
+  }
+  .copy-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--coral-dark);}
+  .copy-btn.copied{background:var(--correct);box-shadow:0 4px 0 #2e9468;}
+
+  .after-note{
+    text-align:center;
+    font-size:14px;
+    color:var(--navy-light);
+    margin-top:20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Talk to Moka 🤖</h1>
+  <div class="subtitle">People & Training — Free Conversation</div>
+  <div class="instruction-note">Copy the text below and paste it into Moka to start your conversation.</div>
+
+  <div class="prompt-box">
+    <span class="label">PASTE THIS INTO MOKA</span>
+    You are a friendly coworker at LongHorn Steakhouse. I'm training to become a shift supervisor, and I want to practice talking about new hire training, onboarding, and Personal Development Plans. Ask me questions about how I track training, how onboarding works, and what happens with certification gaps, the way a curious coworker would. Push me to answer using passive voice sentences and phrasal verbs like "check in with," "followed up on," and "sit in on." I already speak English well, so don't make it too easy — if I answer in a simple way, gently push me to say it in a more professional, polished way instead. Keep the conversation natural, like a real conversation between coworkers, not a quiz.
+  </div>
+
+  <button class="copy-btn" id="copyBtn">📋 Copy Instructions</button>
+
+  <div class="after-note">Once Moka responds, keep the conversation going for about 20-30 minutes — don't stop after one exchange.</div>
+</div>
+
+<script>
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const text = document.querySelector('.prompt-box').innerText.replace('PASTE THIS INTO MOKA', '').trim();
+    const btn = document.getElementById('copyBtn');
+
+    function showCopied() {
+      btn.textContent = '✅ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copy Instructions';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+
+    function fallbackCopy() {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showCopied();
+      } catch (err) {
+        alert('No se pudo copiar automáticamente. Por favor selecciona el texto manualmente.');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(showCopied).catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  });
+</script>
+</body>
+</html>
